@@ -4,6 +4,7 @@ package main
 import (
 	"context"
 	"log"
+	"os"
 
 	"github.com/redis/go-redis/v9"
 )
@@ -12,16 +13,18 @@ var RedisClient *redis.Client
 var ctx = context.Background()
 
 func InitRedis() {
-	RedisClient = redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379", // default Docker Redis port
-		Password: "",               // no password set
-		DB:       0,                // use default DB
-	})
+	redisURL := os.Getenv("REDIS_URL")
+	opt, err := redis.ParseURL(redisURL)
+	if err != nil {
+		log.Fatalf("Invalid REDIS_URL: %v", err)
+	}
 
-	_, err := RedisClient.Ping(ctx).Result()
+	RedisClient = redis.NewClient(opt)
+
+	_, err = RedisClient.Ping(ctx).Result()
 	if err != nil {
 		log.Fatalf("could not connect to Redis: %v", err)
 	}
 
-	log.Println("connected to Redis")
+	log.Println("✅ connected to Redis")
 }
