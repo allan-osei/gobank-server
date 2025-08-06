@@ -4,21 +4,23 @@ package main
 import (
 	"context"
 	"log"
-	"os"
 
 	"github.com/redis/go-redis/v9"
+	"github.com/spf13/viper"
 )
 
 var RedisClient *redis.Client
 var ctx = context.Background()
 
 func InitRedis() {
-	redisURL := os.Getenv("REDIS_URL")
-	opt, err := redis.ParseURL(redisURL)
+	viper.AutomaticEnv() // Read environment variables automatically
+	url := viper.GetString("REDIS_URL")
+	opt, err := redis.ParseURL(url)
 	if err != nil {
 		log.Fatalf("Invalid REDIS_URL: %v", err)
 	}
 
+	RedisClient = redis.NewClient(opt)
 	RedisClient = redis.NewClient(opt)
 
 	_, err = RedisClient.Ping(ctx).Result()
