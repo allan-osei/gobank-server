@@ -2,16 +2,22 @@ package main
 
 import (
 	"log"
+	"os"
 
 	"github.com/spf13/viper"
 )
 
 func LoadConfig() {
-	viper.SetConfigFile(".env")
-	err := viper.ReadInConfig()
-	if err != nil {
-		log.Fatalf("Error reading .env file: %v", err)
+	// Load .env file ONLY in local development
+	if os.Getenv("RAILWAY_ENVIRONMENT") == "" {
+		viper.SetConfigFile(".env")
+		err := viper.ReadInConfig()
+		if err != nil {
+			log.Println("⚠️ No .env file found (expected in Railway)")
+		} else {
+			log.Println("✅ .env file loaded")
+		}
 	}
 
-	viper.AutomaticEnv() // allows override from real env vars
+	viper.AutomaticEnv() // always load real environment variables (Railway injects them)
 }
